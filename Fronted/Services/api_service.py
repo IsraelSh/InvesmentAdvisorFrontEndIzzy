@@ -121,4 +121,16 @@ class APIService:
         except Exception as e:
             return {"success": False, "message": str(e)}
 
+    @staticmethod
+    def create_user(username, password):
+        try:
+            response = requests.post(f"{APIService.BASE_URL}/User/register", json={
+                "username": username,
+                "password": password
+            })
+            response.raise_for_status()
+            return {"success": True, "message": "Account created successfully!"}
+        except Exception as e:
+            return {"success": False, "message": str(e)}
+
 

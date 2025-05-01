@@ -26,7 +26,7 @@ from PySide6.QtWidgets import (
 
 from Fronted.Services.api_service import APIService
 from Fronted.Windows.MainWindow import MainWindow
-
+from Fronted.Windows.SignUpWindow import SignUpWindow
 
 # ======================================== LOGIN WINDOW ======================================== #
 class LoginWindow(QWidget):
@@ -107,10 +107,17 @@ class LoginWindow(QWidget):
 
         self.remember_me_checkbox = QCheckBox("Remember me")
 
+        # ====== LOGIN BUTTON ====== #
         self.login_button = QPushButton("🔒 Login 🗝️")
         self.login_button.setFixedWidth(180)
         self.login_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.login_button.clicked.connect(self.handle_login)
+
+        # ====== signup button ====== #
+        self.signup_button = QPushButton("📝 Sign Up")
+        self.signup_button.setFixedWidth(180)
+        self.signup_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.signup_button.clicked.connect(self.handle_signup)
 
         # ====== Layout ====== #
         layout = QVBoxLayout()
@@ -121,6 +128,7 @@ class LoginWindow(QWidget):
         layout.addWidget(self.password_input, alignment=Qt.AlignCenter)
         layout.addWidget(self.remember_me_checkbox, alignment=Qt.AlignCenter)
         layout.addWidget(self.login_button, alignment=Qt.AlignCenter)
+        layout.addWidget(self.signup_button, alignment=Qt.AlignCenter)
 
         self.setLayout(layout)
 
@@ -152,6 +160,11 @@ class LoginWindow(QWidget):
         self.main_window = MainWindow()
         self.main_window.show()
         self.close()
+
+    def handle_signup(self):
+        from Fronted.Windows.SignUpWindow import SignUpWindow
+        self.signup_window = SignUpWindow()
+        self.signup_window.show()
 
 
 # ======================================== MAIN EXECUTION ======================================== #
