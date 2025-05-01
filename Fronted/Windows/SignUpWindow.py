@@ -87,15 +87,17 @@ class SignUpWindow(QWidget):
             return
 
         response = APIService.create_user(username, password)
-        if response.get("success"):
+        print("Login response:", response)
+
+        if response.get("success") and "userId" in response:
+            APIService.current_user_id = response["userId"]
             QMessageBox.information(self, "Success", response["message"])
-            self.MainWindow1 = MainWindow()
+
+            # פתח את החלון הראשי עם ה־userId
+            self.MainWindow1 = MainWindow(user_id=response["userId"])
             self.MainWindow1.show()
             self.close()
         else:
-            QMessageBox.critical(self, "Error", response["message"])
+            QMessageBox.critical(self, "Error", response.get("message", "Unknown error."))
 
-    def closeEvent(self, event):
-        if self.login_window:
-            self.login_window.show()
-        event.accept()
+

@@ -129,8 +129,7 @@ class APIService:
                 "password": password
             })
             response.raise_for_status()
-            return {"success": True, "message": "Account created successfully!"}
+            return response.json()  # ← מחזיר את מה שהשרת החזיר בפועל, כולל userId
         except Exception as e:
             return {"success": False, "message": str(e)}
-
 

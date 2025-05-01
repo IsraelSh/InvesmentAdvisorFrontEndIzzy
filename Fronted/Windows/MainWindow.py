@@ -22,8 +22,9 @@ from PySide6.QtCore import QTimer
 
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, user_id=None):
         super().__init__()
+        self.user_id = user_id
         self.setWindowTitle("📈 Investment Management System 📈")
         self.setMinimumSize(1000, 700)
 
