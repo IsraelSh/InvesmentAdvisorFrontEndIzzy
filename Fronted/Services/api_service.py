@@ -14,11 +14,17 @@ class APIService:
             })
             response.raise_for_status()
 
+
             # נניח שהשרת מחזיר גם userId
             if response.status_code == 200:
                 data = response.json()
                 APIService.current_user_id = data.get("id")
                 return {"success": True, "message": data.get("message", "Login successful")}
+
+
+
+
+
 
         except Exception as e:
             return {"success": False, "message": str(e)}
@@ -34,6 +40,9 @@ class APIService:
 
     @staticmethod
     def buy_stock(symbol, amount):
+
+        if APIService.current_user_id is None:
+            return {"success": False, "message": "Please login before making a transaction"}
         try:
             stock_response = APIService.get_stock_by_symbol(symbol)
             if not stock_response["success"]:
@@ -42,6 +51,8 @@ class APIService:
             stock_data = stock_response["data"]
             stock_id = stock_data["id"]
             price = stock_data.get("currentPrice", 100)  # מחיר מדומה אם אין
+
+
 
             payload = {
                 "userId": APIService.current_user_id,
@@ -86,7 +97,28 @@ class APIService:
     def get_portfolio():
         try:
             response = requests.get(f"{APIService.BASE_URL}/Portfolio/user/{APIService.current_user_id}")
+
             response.raise_for_status()
             return {"success": True, "data": response.json()}
         except Exception as e:
             return {"success": False, "message": str(e)}
+
+    @staticmethod
+    def get_all_transactions():
+        try:
+            response = requests.get(f"{APIService.BASE_URL}/Transaction")
+            response.raise_for_status()
+            return {"success": True, "data": response.json()}
+        except Exception as e:
+            return {"success": False, "message": str(e)}
+
+    @staticmethod
+    def get_user_transactions():
+        try:
+            response = requests.get(f"{APIService.BASE_URL}/Transaction/user/{APIService.current_user_id}")
+            response.raise_for_status()
+            return {"success": True, "data": response.json()}
+        except Exception as e:
+            return {"success": False, "message": str(e)}
+
+

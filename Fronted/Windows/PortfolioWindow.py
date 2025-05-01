@@ -26,6 +26,7 @@ class PortfolioWindow(QWidget):
         self.setWindowTitle("🌐 Portfolio – Investment Overview 🌐")
         self.resize(950, 650)
 
+
         # ===== Set Background Image ===== #
         palette = QPalette()
         background = QPixmap(
@@ -57,16 +58,18 @@ class PortfolioWindow(QWidget):
 
         for btn in [self.refresh_button, self.save_button, self.switch_view_button]:
             btn.setStyleSheet("""
-                QPushButton {
-                    background-color: rgba(255, 255, 255, 0.8);
-                    color: #00334e;
-                    font-weight: bold;
-                    padding: 10px 18px;
-                    border-radius: 10px;
+               QPushButton {
+                  background-color: transparent;
+                  color: #ffffff;
+                  font-weight: bold;
+                  border: 2px solid #64ffda;
+                  border-radius: 10px;
+                  padding: 10px 20px;
                 }
                 QPushButton:hover {
-                    background-color: rgba(255, 255, 255, 255);
+                       background-color: rgba(100, 255, 218, 0.1);
                 }
+
             """)
             btn.setCursor(Qt.PointingHandCursor)
 
@@ -85,15 +88,7 @@ class PortfolioWindow(QWidget):
             color: #0d47a1;  /* Deep blue text color */
         """)
 
-        self.default_items = [
-            "AAPL – 15 shares",
-            "MSFT – 10 shares",
-            "TSLA – 8 shares",
-            "GOOGL – 12 shares",
-            "AMZN – 6 shares"
-        ]
-        for item in self.default_items:
-            QListWidgetItem(item, self.stock_list)
+
 
         # ===== Stats Table ===== #
         self.stats_table = QTableWidget()
@@ -101,23 +96,29 @@ class PortfolioWindow(QWidget):
         self.stats_table.setHorizontalHeaderLabels(["Stock", "Shares", "Value ($)"])
         self.stats_table.setVisible(False)
         self.stats_table.setStyleSheet("""
-            background-color: rgba(255, 255, 255, 0.95);
-            border-radius: 10px;
-            color: #0d47a1;  /* Bold blue text */
+            QTableWidget {
+                background-color: 1e1e1e
+                color:  #ffffff;
+                font-size: 16px;
+                border-radius: 10px;
+                gridline-color: #90caf9;
+                alternate-background-color:  #2b2b2b;
+            }
+            QHeaderView::section {
+                background-color: rgba(240, 248, 255, 0.95);
+                color: #0d47a1;
+                font-weight: bold;
+                padding: 6px;
+                border: none;
+            }
+            QTableWidget::item {
+                padding: 6px;
+                border: none;
+            }
         """)
+        self.stats_table.setAlternatingRowColors(True)
+        self.stats_table.horizontalHeader().setStretchLastSection(True)
 
-        demo_data = [
-            ("AAPL", 15, 2700),
-            ("MSFT", 10, 3500),
-            ("TSLA", 8, 1800),
-            ("GOOGL", 12, 3600),
-            ("AMZN", 6, 1900)
-        ]
-        self.stats_table.setRowCount(len(demo_data))
-        for row, (stock, shares, value) in enumerate(demo_data):
-            self.stats_table.setItem(row, 0, QTableWidgetItem(stock))
-            self.stats_table.setItem(row, 1, QTableWidgetItem(str(shares)))
-            self.stats_table.setItem(row, 2, QTableWidgetItem(f"{value:,}"))
 
         # ===== Layout ===== #
         layout = QVBoxLayout()
@@ -128,15 +129,53 @@ class PortfolioWindow(QWidget):
         layout.addWidget(self.stats_table)
         self.setLayout(layout)
 
+        self.refresh_portfolio()
+
     def refresh_portfolio(self):
         self.stock_list.clear()
+        self.stats_table.setRowCount(0)
+
+        if APIService.current_user_id is None:
+            QMessageBox.warning(self, "User not logged in", "Please log in first.")
+            return
+
+        print("Sending GET to:", f"{APIService.BASE_URL}/Portfolio/user/{APIService.current_user_id}")
         response = APIService.get_portfolio()
 
         if not response["success"]:
             QMessageBox.critical(self, "Error ❌", response["message"])
             return
 
-        portfolio = response["data"]
-        for item in portfolio:
-            text = f"{item['stockSymbol']} – {item['amount']} shares"
-            QListWidgetItem(text, self.stock_list)
+        portfolio_data = response["data"]["portfolio"]
+
+        self.stats_table.setRowCount(len(portfolio_data))
+
+        for i, item in enumerate(portfolio_data):
+            symbol = item["stockSymbol"]
+            amount = item["amount"]
+            price = item["purchasePrice"]
+            value = item.get("value", amount * price)
+
+            # תצוגה ברשימה
+            QListWidgetItem(f"{symbol} – {amount} shares", self.stock_list)
+
+            # תצוגה בטבלה
+            self.stats_table.setItem(i, 0, QTableWidgetItem(symbol))
+            self.stats_table.setItem(i, 1, QTableWidgetItem(str(amount)))
+            self.stats_table.setItem(i, 2, QTableWidgetItem(f"${value:,.2f}"))
+
+            self.stats_table.setVisible(True)
+            self.stock_list.setVisible(False)
+
+    def save_portfolio_to_file(self):
+        # כאן תכתוב את הלוגיקה לשמירת התיק לקובץ
+        print("Saving portfolio to file...")  # לבינתיים הודעה לבדיקה
+
+    def toggle_table_view(self):
+        if self.stats_table.isVisible():
+            self.stats_table.setVisible(False)
+            self.stock_list.setVisible(True)
+        else:
+            self.stats_table.setVisible(True)
+            self.stock_list.setVisible(False)
+

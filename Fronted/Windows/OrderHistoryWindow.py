@@ -11,12 +11,14 @@
 
 from PySide6.QtWidgets import (
     QWidget, QLabel, QVBoxLayout, QTableWidget, QTableWidgetItem,
-    QPushButton, QLineEdit, QHBoxLayout, QDateEdit, QFileDialog
+    QPushButton, QLineEdit, QHBoxLayout, QDateEdit, QFileDialog, QMessageBox
 )
 from PySide6.QtGui import QPalette, QBrush, QPixmap, QCursor
 from PySide6.QtCore import Qt, QDate
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+
+from Fronted.Services.api_service import APIService
 
 
 # ======================================== ORDER HISTORY WINDOW ======================================== #
@@ -63,19 +65,32 @@ class OrderHistoryWindow(QWidget):
                 color: #0d47a1;
             }
 
-            QTableWidget {
-                background-color: rgba(255, 255, 255, 0.95);
-                color: black;
-                border-radius: 10px;
-            }
+           QTableWidget {
+              background-color: #2c2c2c;  /* רקע כהה */
+              color: #f5f5f5;             /* טקסט בהיר */
+              font-size: 15px;
+             border-radius: 10px;
+              gridline-color: #444;
+              alternate-background-color: #3a3a3a;
+           }
 
-            QHeaderView::section {
-                background-color: #e3f2fd;
-                color: #0d47a1;
+           QHeaderView::section {
+              background-color: #444;
+              color: #e0e0e0;
                 font-weight: bold;
-                padding: 6px;
-            }
-
+              padding: 6px;
+             border: none;
+              }
+              
+           QTableWidget::item {
+               padding: 8px;
+               border: none;
+             }
+        
+        QTableCornerButton::section {
+             background-color: #444;
+                }
+        
             QLineEdit, QDateEdit {
                 background-color: rgba(255, 255, 255, 0.9);
                 color: black;
@@ -85,6 +100,8 @@ class OrderHistoryWindow(QWidget):
                 min-width: 100px;
             }
         """)
+
+
 
         # ===== Title ===== #
         self.title = QLabel("📄 Order History")
@@ -130,19 +147,15 @@ class OrderHistoryWindow(QWidget):
         self.table.setColumnCount(5)
         self.table.setHorizontalHeaderLabels(["Date", "Type", "Stock", "Amount", "Total ($)"])
         self.table.setSortingEnabled(True)
+        self.table.setAlternatingRowColors(True)
+        self.table.horizontalHeader().setStretchLastSection(True)
 
         # ===== Chart Setup (hidden) ===== #
         self.graph_canvas = FigureCanvas(Figure(figsize=(6, 3)))
         self.graph_canvas.hide()
 
-        # ===== Full Data ===== #
-        self.full_data = [
-            ("2025-04-01", "Buy", "AAPL", 10, 1800),
-            ("2025-04-02", "Sell", "TSLA", 5, 1200),
-            ("2025-04-03", "Buy", "MSFT", 8, 1600),
-            ("2025-04-04", "Sell", "GOOGL", 6, 2000),
-            ("2025-04-05", "Buy", "AMZN", 4, 950),
-        ]
+        self.full_data = []
+        self.load_transactions_from_api()  # ✅ במקום hardcoded
 
         self.load_data(self.full_data)
 
@@ -153,6 +166,31 @@ class OrderHistoryWindow(QWidget):
         layout.addWidget(self.table)
         layout.addWidget(self.graph_canvas)
         self.setLayout(layout)
+
+    def load_transactions_from_api(self):
+        if APIService.current_user_id is None:
+            QMessageBox.warning(self, "Login Required", "Please log in first.")
+            return
+
+        response = APIService.get_user_transactions()
+        if not response["success"]:
+            QMessageBox.critical(self, "Error", response["message"])
+            return
+
+        transactions = response["data"]
+        self.full_data = [
+            (
+                t["transactionDate"].split("T")[0],
+                t["transactionType"].capitalize(),
+                t["stock"]["symbol"],
+                t["transactionAmount"],
+                round(t["priceAtTransaction"] * t["transactionAmount"], 2)
+            )
+            for t in transactions
+        ]
+
+        self.load_data(self.full_data)
+
 
     # ===== Load data into the table ===== #
     def load_data(self, data):
