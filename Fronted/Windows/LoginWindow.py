@@ -163,8 +163,10 @@ class LoginWindow(QWidget):
 
     def handle_signup(self):
         from Fronted.Windows.SignUpWindow import SignUpWindow
-        self.signup_window = SignUpWindow()
+        self.signup_window = SignUpWindow(login_window=self)
         self.signup_window.show()
+        self.hide()
+
 
 
 # ======================================== MAIN EXECUTION ======================================== #

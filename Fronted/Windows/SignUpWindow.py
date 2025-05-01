@@ -1,3 +1,7 @@
+from Fronted.Windows.MainWindow import MainWindow
+
+
+
 from PySide6.QtWidgets import (
     QWidget, QLabel, QVBoxLayout, QLineEdit, QPushButton, QMessageBox
 )
@@ -7,9 +11,10 @@ from Fronted.Services.api_service import APIService  # ודא שיש לך פונ
 
 
 class SignUpWindow(QWidget):
-    def __init__(self):
+    def __init__(self, login_window=None):
         super().__init__()
         self.setWindowTitle("📝 Sign Up – Create Your Account")
+        self.login_window = login_window
         self.resize(600, 400)
 
         # === רקע ===
@@ -84,6 +89,13 @@ class SignUpWindow(QWidget):
         response = APIService.create_user(username, password)
         if response.get("success"):
             QMessageBox.information(self, "Success", response["message"])
+            self.MainWindow1 = MainWindow()
+            self.MainWindow1.show()
             self.close()
         else:
             QMessageBox.critical(self, "Error", response["message"])
+
+    def closeEvent(self, event):
+        if self.login_window:
+            self.login_window.show()
+        event.accept()
