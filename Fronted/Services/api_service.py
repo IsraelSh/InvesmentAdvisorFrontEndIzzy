@@ -21,11 +21,6 @@ class APIService:
                 APIService.current_user_id = data.get("id")
                 return {"success": True, "message": data.get("message", "Login successful")}
 
-
-
-
-
-
         except Exception as e:
             return {"success": False, "message": str(e)}
 

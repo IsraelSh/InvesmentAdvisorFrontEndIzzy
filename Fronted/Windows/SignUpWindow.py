@@ -1,13 +1,12 @@
 from Fronted.Windows.MainWindow import MainWindow
 
-
-
 from PySide6.QtWidgets import (
-    QWidget, QLabel, QVBoxLayout, QLineEdit, QPushButton, QMessageBox
+    QWidget, QLabel, QVBoxLayout, QLineEdit, QPushButton, QMessageBox, QHBoxLayout
 )
 from PySide6.QtGui import QPalette, QBrush, QPixmap, QCursor
 from PySide6.QtCore import Qt
-from Fronted.Services.api_service import APIService  # ודא שיש לך פונקציה create_user שם
+from Fronted.Services.api_service import APIService
+import os
 
 
 class SignUpWindow(QWidget):
@@ -15,51 +14,63 @@ class SignUpWindow(QWidget):
         super().__init__()
         self.setWindowTitle("📝 Sign Up – Create Your Account")
         self.login_window = login_window
-        self.resize(600, 400)
+        self.resize(800, 500)
 
         # === רקע ===
         palette = QPalette()
-        background = QPixmap("C:/Users/elyas/PycharmProjects/InvestmentAdvisor/Pictures/background_pic.jpeg")
+        current_dir = os.path.dirname(__file__)
+        background_path = os.path.normpath(os.path.join(current_dir, "..", "..", "Pictures", "background_pic.jpeg"))
+        background = QPixmap(background_path)
         palette.setBrush(QPalette.Window, QBrush(background))
         self.setPalette(palette)
 
-        # === עיצוב כללי ===
+        # === עיצוב כולל ===
         self.setStyleSheet("""
-            QLabel {
+            QLabel#titleLabel {
                 color: white;
-                font-size: 18px;
+                font-size: 26px;
                 font-weight: bold;
             }
 
             QLineEdit {
-                background-color: #e3f2fd;
-                color: #0d47a1;
-                border: 1px solid #90caf9;
-                border-radius: 6px;
-                padding: 6px;
-                font-size: 14px;
+                background-color: white;
+                color: black;
+                border: none;
+                border-radius: 15px;
+                padding: 1px 10px;
+                font-size: 16px;
+                min-width: 340px;
+                max-width: 340px;
+                height: 42px;
             }
 
             QPushButton {
-                background-color: rgba(255, 255, 255, 0.8);
-                color: #0d47a1;
+                background-color: white;
+                color: #1a237e;
                 font-weight: bold;
-                font-size: 14px;
-                border-radius: 10px;
-                padding: 10px 20px;
+                font-size: 16px;
+                border-radius: 14px;
+                padding: 10px 30px;
+                min-width: 200px;
+                max-width: 180px;
             }
 
             QPushButton:hover {
-                background-color: rgba(255, 255, 255, 1.0);
+                background-color: #eeeeee;
             }
         """)
 
+        # === כותרת "Sign Up" ===
+        self.title_label = QLabel("📝 Sign Up")
+        self.title_label.setObjectName("titleLabel")
+        self.title_label.setAlignment(Qt.AlignCenter)
+
         # === שדות קלט ===
         self.username_input = QLineEdit()
-        self.username_input.setPlaceholderText("Enter a username")
+        self.username_input.setPlaceholderText("Username")
 
         self.password_input = QLineEdit()
-        self.password_input.setPlaceholderText("Enter a password")
+        self.password_input.setPlaceholderText("Password")
         self.password_input.setEchoMode(QLineEdit.Password)
 
         # === כפתור רישום ===
@@ -67,14 +78,20 @@ class SignUpWindow(QWidget):
         self.signup_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.signup_button.clicked.connect(self.handle_signup)
 
+        # === עטיפת הכפתור כדי ליישר אותו למרכז ===
+        button_wrapper = QHBoxLayout()
+        button_wrapper.addStretch()
+        button_wrapper.addWidget(self.signup_button)
+        button_wrapper.addStretch()
+
         # === פריסה ===
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignCenter)
-        layout.setSpacing(15)
-        layout.addWidget(QLabel("📝 Sign Up"))
-        layout.addWidget(self.username_input)
-        layout.addWidget(self.password_input)
-        layout.addWidget(self.signup_button)
+        layout.setSpacing(18)
+        layout.addWidget(self.title_label)
+        layout.addWidget(self.username_input, alignment=Qt.AlignCenter)
+        layout.addWidget(self.password_input, alignment=Qt.AlignCenter)
+        layout.addLayout(button_wrapper)
 
         self.setLayout(layout)
 
@@ -99,5 +116,3 @@ class SignUpWindow(QWidget):
             self.close()
         else:
             QMessageBox.critical(self, "Error", response.get("message", "Unknown error."))
-
-

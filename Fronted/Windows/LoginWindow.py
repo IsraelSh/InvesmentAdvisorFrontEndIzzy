@@ -38,7 +38,7 @@ class LoginWindow(QWidget):
         # ===== Set Background Image ===== #
         palette = QPalette()
         background = QPixmap(
-            "C:/Users/elyas/PycharmProjects/InvestmentAdvisor/Pictures/background_pic.jpeg"
+            "C:\\Users\\Israel\\PycharmProjects\\InvestmentAdvisor\\Pictures\\background_pic.jpeg"
         )  # ✅ make sure this exists
         palette.setBrush(QPalette.Window, QBrush(background))
         self.setPalette(palette)
