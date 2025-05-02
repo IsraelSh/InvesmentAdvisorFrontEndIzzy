@@ -14,6 +14,7 @@ import requests
 import os
 from sentence_transformers import SentenceTransformer
 from Fronted.Services.vector_store import load_data, create_faiss_index, search_similar_chunks
+import google.generativeai as genai
 
 # =========== Base function: send prompt to Ollama ============ #
 def ask_ollama(prompt: str, model="gemma:2b") -> str:
@@ -56,3 +57,14 @@ def ask_ollama_contextual(question: str, model_name="gemma:2b") -> str:
 
     # =========== Step 4: Send the enriched prompt to Ollama ============ #
     return ask_ollama(final_prompt, model=model_name)
+
+
+genai.configure(api_key= "AIzaSyAZA9yNT3ijGbsw_GwrJBpzC8Bi_u4aO_I")
+
+def ask_google_gemini(prompt):
+    try:
+        model = genai.GenerativeModel(model_name="models/chat-bison-001")
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        return f"❌ Error: {e}"

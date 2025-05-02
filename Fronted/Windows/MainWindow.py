@@ -1,3 +1,14 @@
+# ╔═════════════════════════════════╗
+# ║         📁 Python Project 📁
+# ║
+# ║  ✨ Team Members ✨
+# ║
+# ║  🧑‍💻 Elyasaf Cohen 311557227 🧑‍💻
+# ║  🧑‍💻 Eldad Cohen   207920711 🧑‍💻
+# ║  🧑‍💻 Israel Shlomo 315130344 🧑‍💻
+# ╚══════════════════════════════════╝
+
+# ============= Import all required modules and dependencies ============= #
 from PySide6.QtWidgets import (
     QMainWindow, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QLabel, QMessageBox,
     QLineEdit, QTextEdit
@@ -10,7 +21,7 @@ from datetime import datetime
 import matplotlib.dates as mdates
 from urllib.request import urlopen
 
-# Internal Imports
+# ============= Import custom project files ============= #
 from Fronted.Constants.stock_logos import stock_logos
 from Fronted.Services.polygon_service import PolygonService
 from Fronted.Services.Ollama_api import ask_ollama
@@ -19,6 +30,16 @@ from Fronted.Windows.SellStocksWindow import SellStocksWindow
 from Fronted.Windows.OrderHistoryWindow import OrderHistoryWindow
 from Fronted.Windows.PortfolioWindow import PortfolioWindow
 from Fronted.Windows.AIChatBotWindow import AIChatBotWindow
+from Fronted.Services.Ollama_api import ask_google_gemini
+
+
+
+
+# ╔════════════════════════════════════════════════════════════════╗
+# ║ MainWindow – This is the main application window.             ║
+# ║ It contains navigation buttons, stock chart display, AI chat, ║
+# ║ and a logo area for the selected stock.                       ║
+# ╚════════════════════════════════════════════════════════════════╝
 
 
 class MainWindow(QMainWindow):
@@ -28,7 +49,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("📈 Investment Management System 📈")
         self.setMinimumSize(1000, 700)
 
-        # ===== Background Image =====
+        # ============= Set background image ============= #
         self.bg_path = "C:/Users/elyas/PycharmProjects/InvestmentAdvisor/Pictures/background_pic.jpeg"
         self.bg_label = QLabel(self)
         self.bg_label.setScaledContents(True)
@@ -39,7 +60,7 @@ class MainWindow(QMainWindow):
         palette.setBrush(QPalette.Window, QBrush(background))
         self.setPalette(palette)
 
-        # ===== Layouts =====
+        # ============= Setup main layout ============= #
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
 
@@ -47,13 +68,13 @@ class MainWindow(QMainWindow):
         self.left_menu = QVBoxLayout()
         self.main_layout.addLayout(self.left_menu, 1)
 
-        # ===== Buttons Menu =====
+        # ============= Create side menu buttons ============= #
         self.buttons = [
-            ("🟢 Buy Stocks", self.on_buy_stocks_clicked),
-            ("🔴 Sell Stocks", self.on_sell_stocks_clicked),
-            ("📄 Order History", self.show_order_history_windows),
-            ("📁 Portfolio", self.on_portfolio_clicked),
-            ("🤖 Ask Chatbot", self.on_askAIChatBot_clicked)
+            ("🟢 Buy Stocks 🟢", self.on_buy_stocks_clicked),
+            ("🔴 Sell Stocks 🔴", self.on_sell_stocks_clicked),
+            ("📄 Order History 📄", self.show_order_history_windows),
+            ("📁 Portfolio 📁", self.on_portfolio_clicked),
+            ("🤖 Ask Chatbot 🤖", self.on_askAIChatBot_clicked)
         ]
 
         for text, slot in self.buttons:
@@ -62,7 +83,7 @@ class MainWindow(QMainWindow):
             btn.setCursor(Qt.PointingHandCursor)
             self.left_menu.addWidget(btn)
 
-        # ===== Symbol Input =====
+        # ============= Input field for stock symbol ============= #
         self.symbol_input = QLineEdit()
         self.symbol_input.setPlaceholderText("e.g., google")
         self.left_menu.addWidget(self.symbol_input)
@@ -71,7 +92,7 @@ class MainWindow(QMainWindow):
         self.load_chart_btn.clicked.connect(lambda: self.show_stock_chart(self.symbol_input.text().strip()))
         self.left_menu.addWidget(self.load_chart_btn)
 
-        # ===== Logo Display =====
+        # ============= Display stock logo ============= #
         self.logo_container = QWidget()
         self.logo_layout = QHBoxLayout(self.logo_container)
         self.logo_layout.setContentsMargins(0, 0, 0, 0)
@@ -93,7 +114,7 @@ class MainWindow(QMainWindow):
         self.logo_layout.addWidget(self.logo_label)
         self.left_menu.addWidget(self.logo_container, 0, Qt.AlignCenter)
 
-        # ===== AI Chat =====
+        # ============= AI Chat Input and Output ============= #
         self.chat_input = QLineEdit()
         self.chat_input.setPlaceholderText("Ask the AI assistant...")
         self.left_menu.addWidget(self.chat_input)
@@ -113,14 +134,14 @@ class MainWindow(QMainWindow):
         self.send_chat_btn.clicked.connect(self.handle_chat_message)
         self.left_menu.addWidget(self.send_chat_btn)
 
-        # ===== Chart Area =====
+        # ============= Display area for stock chart ============= #
         self.graph_canvas = FigureCanvas(Figure(figsize=(7, 5)))
         self.main_layout.addWidget(self.graph_canvas, 3)
 
-        # ===== Initial Load =====
+        # ============= Load default chart at startup ============= #
         self.show_stock_chart("google")
 
-        # ===== Style =====
+        # ============= Apply overall styling ============= #
         self.setStyleSheet("""
             QPushButton {
                 background-color: #2E3B4E;
@@ -142,13 +163,14 @@ class MainWindow(QMainWindow):
             }
         """)
 
+    # ============= Handle window resize to scale background image ============= #
     def resizeEvent(self, event):
         pixmap = QPixmap(self.bg_path)
         self.bg_label.setPixmap(pixmap.scaled(self.size(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation))
         self.bg_label.resize(self.size())
         super().resizeEvent(event)
 
-    # ===== Navigation Actions =====
+    # ============= Button handlers for opening new windows ============= #
     def on_buy_stocks_clicked(self):
         self.BuyWindow = BuyStocksWindow()
         self.BuyWindow.show()
@@ -169,7 +191,7 @@ class MainWindow(QMainWindow):
         self.AIChatBotWindow = AIChatBotWindow()
         self.AIChatBotWindow.show()
 
-    # ===== Main Feature: Load Stock Chart & Logo =====
+    # ============= Load and display stock chart and logo ============= #
     def show_stock_chart(self, symbol="AAPL"):
         mapping = {
             "google": "GOOGL", "apple": "AAPL", "microsoft": "MSFT",
@@ -183,7 +205,7 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Error", f"No data found for {symbol}")
             return
 
-        # Draw Chart
+        # ============= Draw stock price chart ============= #
         self.graph_canvas.figure.clf()
         fig = self.graph_canvas.figure
         fig.set_facecolor("#1e1e1e")
@@ -206,7 +228,7 @@ class MainWindow(QMainWindow):
 
         self.graph_canvas.draw()
 
-        # Load Logo
+        # ============= Load and show company logo ============= #
         logo_url = stock_logos.get(symbol)
         self.logo_label.clear()
         if logo_url:
@@ -222,7 +244,7 @@ class MainWindow(QMainWindow):
         else:
             self.logo_label.setText("🔍 No logo found")
 
-    # ===== Handle Chat Prompt =====
+    # ============= Send chat prompt and display AI response ============= #
     def handle_chat_message(self):
         prompt = self.chat_input.text().strip()
         if not prompt:
@@ -233,7 +255,8 @@ class MainWindow(QMainWindow):
 
         def update_response():
             try:
-                response = ask_ollama(prompt)
+                response = ask_google_gemini(prompt)
+
             except Exception as e:
                 response = f"❌ Error: {e}"
             self.chat_response.setText(response)

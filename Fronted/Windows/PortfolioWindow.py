@@ -11,12 +11,11 @@
 
 from PySide6.QtWidgets import (
     QWidget, QLabel, QVBoxLayout, QHBoxLayout, QListWidget, QListWidgetItem,
-    QPushButton, QTableWidget, QTableWidgetItem, QFileDialog, QMessageBox
+    QPushButton, QTableWidget, QTableWidgetItem, QMessageBox
 )
 from PySide6.QtGui import QPixmap, QPalette, QBrush, QCursor
 from PySide6.QtCore import Qt
 from Fronted.Services.api_service import APIService
-
 
 
 # ======================================== PORTFOLIO WINDOW ======================================== #
@@ -25,7 +24,6 @@ class PortfolioWindow(QWidget):
         super().__init__()
         self.setWindowTitle("🌐 Portfolio – Investment Overview 🌐")
         self.resize(950, 650)
-
 
         # ===== Set Background Image ===== #
         palette = QPalette()
@@ -88,8 +86,6 @@ class PortfolioWindow(QWidget):
             color: #0d47a1;  /* Deep blue text color */
         """)
 
-
-
         # ===== Stats Table ===== #
         self.stats_table = QTableWidget()
         self.stats_table.setColumnCount(3)
@@ -119,7 +115,6 @@ class PortfolioWindow(QWidget):
         self.stats_table.setAlternatingRowColors(True)
         self.stats_table.horizontalHeader().setStretchLastSection(True)
 
-
         # ===== Layout ===== #
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignTop)
@@ -139,33 +134,44 @@ class PortfolioWindow(QWidget):
             QMessageBox.warning(self, "User not logged in", "Please log in first.")
             return
 
-        print("Sending GET to:", f"{APIService.BASE_URL}/Portfolio/user/{APIService.current_user_id}")
-        response = APIService.get_portfolio()
+        try:
+            print("Sending GET to:", f"{APIService.BASE_URL}/Portfolio/user/{APIService.current_user_id}")
+            response = APIService.get_portfolio()
 
-        if not response["success"]:
-            QMessageBox.critical(self, "Error ❌", response["message"])
-            return
+            if not response["success"]:
+                raise Exception(response["message"])
 
-        portfolio_data = response["data"]["portfolio"]
+            if "portfolio" not in response["data"]:
+                raise Exception("Response JSON missing 'portfolio' key")
 
-        self.stats_table.setRowCount(len(portfolio_data))
+            portfolio_data = response["data"]["portfolio"]
+            print("✅ Portfolio response received:", portfolio_data)
 
-        for i, item in enumerate(portfolio_data):
-            symbol = item["stockSymbol"]
-            amount = item["amount"]
-            price = item["purchasePrice"]
-            value = item.get("value", amount * price)
+            self.stats_table.setRowCount(len(portfolio_data))
 
-            # תצוגה ברשימה
-            QListWidgetItem(f"{symbol} – {amount} shares", self.stock_list)
+            for i, item in enumerate(portfolio_data):
+                try:
+                    symbol = item.get("stockSymbol", "N/A")
+                    amount = item.get("amount", 0)
+                    price = item.get("purchasePrice", 0)
+                    value = item.get("value", amount * price)
 
-            # תצוגה בטבלה
-            self.stats_table.setItem(i, 0, QTableWidgetItem(symbol))
-            self.stats_table.setItem(i, 1, QTableWidgetItem(str(amount)))
-            self.stats_table.setItem(i, 2, QTableWidgetItem(f"${value:,.2f}"))
+                    QListWidgetItem(f"{symbol} – {amount} shares", self.stock_list)
+
+                    self.stats_table.setItem(i, 0, QTableWidgetItem(symbol))
+                    self.stats_table.setItem(i, 1, QTableWidgetItem(str(amount)))
+                    self.stats_table.setItem(i, 2, QTableWidgetItem(f"${value:,.2f}"))
+
+                except Exception as item_err:
+                    print(f"❌ Error processing item at index {i}: {item_err}")
+                    continue
 
             self.stats_table.setVisible(True)
             self.stock_list.setVisible(False)
+
+        except Exception as e:
+            print(f"❌ Exception while loading portfolio: {e}")
+            QMessageBox.critical(self, "Error ❌", f"Failed to load portfolio:\n{e}")
 
     def save_portfolio_to_file(self):
         # כאן תכתוב את הלוגיקה לשמירת התיק לקובץ
@@ -178,4 +184,3 @@ class PortfolioWindow(QWidget):
         else:
             self.stats_table.setVisible(True)
             self.stock_list.setVisible(False)
-

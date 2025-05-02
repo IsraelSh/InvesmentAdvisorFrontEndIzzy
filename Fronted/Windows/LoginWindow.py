@@ -26,7 +26,7 @@ from PySide6.QtWidgets import (
 
 from Fronted.Services.api_service import APIService
 from Fronted.Windows.MainWindow import MainWindow
-from Fronted.Windows.SignUpWindow import SignUpWindow
+
 
 # ======================================== LOGIN WINDOW ======================================== #
 class LoginWindow(QWidget):
@@ -166,7 +166,6 @@ class LoginWindow(QWidget):
         self.signup_window = SignUpWindow(login_window=self)
         self.signup_window.show()
         self.hide()
-
 
 
 # ======================================== MAIN EXECUTION ======================================== #

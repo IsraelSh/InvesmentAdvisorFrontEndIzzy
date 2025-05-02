@@ -1,3 +1,15 @@
+# ╔═════════════════════════════════╗
+# ║         📁 Python Project 📁
+# ║
+# ║  ✨ Team Members ✨
+# ║
+# ║  🧑‍💻 Elyasaf Cohen 311557227 🧑‍💻
+# ║  🧑‍💻 Eldad Cohen   207920711 🧑‍💻
+# ║  🧑‍💻 Israel Shlomo 315130344 🧑‍💻
+# ║
+# ╚══════════════════════════════════╝
+
+
 from Fronted.Windows.MainWindow import MainWindow
 
 from PySide6.QtWidgets import (

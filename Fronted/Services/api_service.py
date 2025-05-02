@@ -91,11 +91,18 @@ class APIService:
     @staticmethod
     def get_portfolio():
         try:
-            response = requests.get(f"{APIService.BASE_URL}/Portfolio/user/{APIService.current_user_id}")
+            url = f"{APIService.BASE_URL}/Portfolio/user/{APIService.current_user_id}"
+            print(f"📡 Sending GET request to: {url}")
+
+            response = requests.get(url)
+            print(f"🔁 Raw response status: {response.status_code}")
+            print(f"📄 Raw response body: {response.text[:1000]}")  # כדי לא להציף – חותך ל־1000 תווים
 
             response.raise_for_status()
+
             return {"success": True, "data": response.json()}
         except Exception as e:
+            print(f"❌ EXCEPTION in get_portfolio(): {e}")
             return {"success": False, "message": str(e)}
 
     @staticmethod
